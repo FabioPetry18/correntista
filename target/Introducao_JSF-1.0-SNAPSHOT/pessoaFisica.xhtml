@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="./principal.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">                
+    <ui:define name="conteudo">
+
+        <p:panel id="painel_conteudo" header="Pessoa Fisica">
+            <p:tabView id="tab_view" activeIndex="#{pfisicaC.aba}">
+                <p:ajax event="tabChange" listener="#{pfisicaC.onTabChange}" update="tab_view:form_novo:profissao"/>
+                <p:ajax event="tabClose" listener="#{pfisicaC.onTabClose}"/>
+                
+                <p:tab title="Pesquisa">
+                    <h:form id="form_pesquisa">
+                        <p:panelGrid columns="3" layout="flex"
+                                     columnClasses="p-col-12 p-md-3 p-xl-2, p-col-12 p-md-9 p-xl-4, p-col-12 p-md-3 p-xl-2"
+                                     contentStyleClass="ui-fluid">
+                            <p:outputLabel for="fisica" value="Nome:" />
+                            <p:inputText id="fisica" value="#{pfisicaC.pessoaFisica.nome}" required="true" requiredMessage="nome é obrigatório"/>
+                            <p:commandButton value="Pesquisar" update="tabela fisica" action="#{pfisicaC.pesquisarPorNome()}"/>
+                            
+                        </p:panelGrid>
+                        <p:dataTable id="tabela" var="pessoa" value="#{pfisicaC.modelfisicas}" rows="10"
+                                     paginator="true" paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}">
+
+                            <p:column headerText="Nome">
+                                <h:outputText value="#{pessoa.nome}" />
+                            </p:column>
+
+                            <p:column headerText="Cpf">
+                                <h:outputText value="#{pessoa.cpf}" />
+                            </p:column>
+
+                            <p:column headerText="Email">
+                                <h:outputText value="#{pessoa.email}" />
+                            </p:column>
+                            <p:column headerText="Logradouro">
+                                <h:outputText value="#{pessoa.endereco.logradouro}" />
+                            </p:column>
+                              <p:column headerText="Bairro">
+                                  <h:outputText value="#{pessoa.endereco.bairro}" />
+                            </p:column>
+                            <p:column headerText="ação">
+                                <p:commandButton icon="pi pi-pencil" style="margin-right: 12px" styleClass="rounded-button ui-button-outlined" title="Alterar" process="@this" actionListener="#{pfisicaC.salvar()}" update="@all"/>
+                                <p:commandButton icon="pi pi-trash" styleClass="rounded-button ui-button-outlined" title="Excluir" process="@this" actionListener="#{pfisicaC.excluir}" update="tabela">
+                                    <p:confirm header="Confirmação" message="Deseja realmente excluir?" icon="pi pi-info-circle"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>   
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                            <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                            <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" />
+                        </p:confirmDialog>
+                    </h:form>   
+                </p:tab>     
+
+
+
+
+                <p:tab title="Novo">
+                    <h:form id="form_novo">
+                      <p:panelGrid columns="4" layout="flex" columnClasses="p-col-12 p-md-3 p-xl-2, p-col-12 p-md-9 p-xl-4, p-col-12 p-md-3 p-xl-2, p-col-12 p-md-9 p-xl-4" contentStyleClass="p-align-baseline ui-fluid">
+                            <p:outputLabel for="nome" value="Nome:" />
+                            <p:inputText id="nome" value="#{pfisicaC.pessoaFisica.nome}" required="true" requiredMessage="nome é obrigatório" />
+                            
+                             <p:outputLabel for="email" value="Email:" />
+                             <p:inputText id="email" value="#{pfisicaC.pessoaFisica.email}" required="true" requiredMessage="email é obrigatório" />
+
+                            <p:outputLabel for="cpf" value="Cpf:" />
+                            <p:inputMask id="cpf" value="#{pfisicaC.pessoaFisica.cpf}" required="true" requiredMessage="Cpf é obrigatório" mask="999.999.999-99" />
+                            
+                            <p:outputLabel for="rg" value="Rg:" />
+                            <p:inputText id="rg" value="#{pfisicaC.pessoaFisica.rg}" required="true" requiredMessage="email é obrigatório" />
+                            
+                            <p:outputLabel for="profissao" value="Profissao: ">                                                          
+                                <p:selectOneMenu id="profissao" value="#{pfisicaC.profissao.id}" requiredMessage="Perfil é obrigatorio!" 
+                                                 filter="true" filterMatchMode="startsWith" > 
+                                    <f:selectItem itemLabel="Escolha um perfil" itemValue=""/>
+                                    <f:selectItems value="#{pfisicaC.comboProfissoes}"/>
+                                </p:selectOneMenu>
+                            </p:outputLabel>
+                            
+                            <h:outputLabel value=""/>   
+                            <h:outputLabel value=""/>   
+                            
+                         <p:outputLabel for="cep" value="CEP:" />
+                         <p:inputMask id="cep" value="#{pfisicaC.endereco.cep}" required="true" requiredMessage="cep é obrigatório" mask="99999-999" size="10" >  
+                         
+                             <p:ajax listener="#{pfisicaC.buscarCep()}" event="blur" update="rua numero bairro cidade uf" />
+                         </p:inputMask>
+                         
+                          <p:outputLabel for="rua" value="Logradouro:" />
+                          <p:inputText id="rua" value="#{pfisicaC.endereco.logradouro}" required="true" requiredMessage="logradouro é obrigatório" />
+                          
+                          <p:outputLabel for="numero" value="Numero:" />
+                          <p:inputText id="numero" value="#{pfisicaC.endereco.numero}" required="true" requiredMessage="numero é obrigatório" />
+                          
+                          <p:outputLabel for="bairro" value="Bairro:" />
+                          <p:inputText id="bairro" value="#{pfisicaC.endereco.bairro}" required="true" requiredMessage="bairro é obrigatório" />
+                          
+                          <p:outputLabel for="cidade" value="Cidade:" />
+                          <p:inputText id="cidade" value="#{pfisicaC.endereco.localidade}" required="true" requiredMessage="cidade é obrigatório" />
+                          
+                          <p:outputLabel for="uf" value="Estado:" />
+                          <p:inputText id="uf" value="#{pfisicaC.endereco.uf}" required="true" requiredMessage="Estado: é obrigatório" />
+                          
+                          <p:outputLabel for="complemento" value="Complemento:" />
+                          <p:inputText id="complemento" value="#{pfisicaC.endereco.complemento}" required="true" requiredMessage="complemento é obrigatório" />
+                            
+                            
+                          </p:panelGrid>
+                         <p:commandButton value="Salvar" actionListener="#{pfisicaC.salvar()}" update="@all"/>
+                    </h:form>
+                </p:tab>
+            </p:tabView>
+        </p:panel>
+
+
+    </ui:define>
+
+</ui:composition>
